@@ -892,7 +892,18 @@
     const canvas = document.getElementById('sigReqCanvas');
     const sigData = canvas ? canvas.toDataURL() : '';
 
-   const newTicket = {
+  async function submitTicket(e) {
+    e.preventDefault();
+
+    let reqTypeVal = document.getElementById('reqType').value;
+    if(reqTypeVal === 'ሌላ') {
+        reqTypeVal = 'ሌላ: ' + document.getElementById('reqTypeOther').value;
+    }
+
+    const canvas = document.getElementById('sigReqCanvas');
+    const sigData = canvas ? canvas.toDataURL() : '';
+
+    const newTicket = {
         timestamp: Date.now(),
         requesterName: document.getElementById('reqName')?.value?.trim() || '',
         department: document.getElementById('reqDept')?.value || '',
@@ -902,6 +913,12 @@
         date: document.getElementById('reqDate')?.value || '',
         sig: typeof sigData !== 'undefined' ? sigData : '',
         status: 'Pending'
+    };
+
+    // አሁን 'await' ያለ ምንም ችግር መስራት ይችላል
+    await addDoc(collection(db, "bela_tickets"), newTicket);
+    alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+}
     };
     
 
