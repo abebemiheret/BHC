@@ -903,7 +903,7 @@
     const canvas = document.getElementById('sigReqCanvas');
     const sigData = canvas ? canvas.toDataURL() : '';
 
-    const newTicket = {
+   const newTicket = {
         timestamp: Date.now(),
         requesterName: document.getElementById('reqName')?.value?.trim() || '',
         department: document.getElementById('reqDept')?.value || '',
@@ -917,6 +917,8 @@
 
     await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+    document.getElementById('ticketForm').reset();
+}
 }
     // አሁን 'await' ያለ ምንም ችግር መስራት ይችላል
     await addDoc(collection(db, "bela_tickets"), newTicket);
