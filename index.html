@@ -894,16 +894,21 @@
 
             const newTicket = {
                 const newTicket = {
-    const newTicket = {
-    timestamp: Date.now(),
-    requesterName: document.getElementById('reqName')?.value?.trim() || '',
-    department: document.getElementById('reqDept')?.value || '',
-    room: document.getElementById('reqRoom')?.value || '',
-    type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
-    issue: document.getElementById('reqDesc')?.value || '',
-    date: document.getElementById('reqDate')?.value || '',
-    sig: typeof sigData !== 'undefined' ? sigData : '',
-    status: 'Pending'
+   const newTicket = {
+      timestamp: Date.now(),
+      requesterName: document.getElementById('reqName')?.value?.trim() || '',
+      department: document.getElementById('reqDept')?.value || '',
+      room: document.getElementById('reqRoom')?.value || '',
+      type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
+      issue: document.getElementById('reqDesc')?.value || '',
+      date: document.getElementById('reqDate')?.value || '',
+      sig: typeof sigData !== 'undefined' ? sigData : '',
+      status: 'Pending'
+  };
+
+  // መረጃውን ወደ Firebase የሚልከው ትእዛዝ
+  await addDoc(collection(db, "bela_tickets"), newTicket);
+  alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
 };
 };
 
