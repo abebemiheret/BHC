@@ -894,16 +894,17 @@
 
             const newTicket = {
                 const newTicket = {
+    const newTicket = {
     timestamp: Date.now(),
-    requesterName: document.getElementById('reqName').value.trim(),
-    department: document.getElementById('reqDept').value,
-    room: document.getElementById('reqRoom').value,
-    type: reqTypeVal,
-    issue: document.getElementById('reqDesc').value,
-    date: document.getElementById('reqDate').value,
-    sig: sigData,
-    status: 'Pending',
-    urgency: 'Medium'
+    requesterName: document.getElementById('reqName')?.value?.trim() || '',
+    department: document.getElementById('reqDept')?.value || '',
+    room: document.getElementById('reqRoom')?.value || '',
+    type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
+    issue: document.getElementById('reqDesc')?.value || '',
+    date: document.getElementById('reqDate')?.value || '',
+    sig: typeof sigData !== 'undefined' ? sigData : '',
+    status: 'Pending'
+};
 };
 
             // 1. Save locally
