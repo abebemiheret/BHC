@@ -1185,8 +1185,78 @@
                             <td>${l.items}</td>
                             <td>${l.issues}</td>
                             <td><img src="${l.sig}" class="sig-img" alt="ፊርማ"></td>
-                        </tr>
-                    `;
+                       </tr>
+            `;
+        });
+    }
+}
+</script>
+
+<!-- የ Firebase ማገናኛ ኮድ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmZ_j-83F1DcU1fS9MXG1uM5nOlMZPpCM",
+    authDomain: "bellahc.firebaseapp.com",
+    projectId: "bellahc",
+    storageBucket: "bellahc.firebasestorage.app",
+    messagingSenderId: "330353373650",
+    appId: "1:330353373650:web:d57a156d98a7eb3bef580b",
+    measurementId: "G-T3X0SPV5QT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Ticket Form Submit
+  const ticketForm = document.getElementById("ticketForm");
+  if (ticketForm) {
+    ticketForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, "bela_tickets"), {
+          requesterName: document.getElementById("requesterName")?.value || "",
+          department: document.getElementById("department")?.value || "",
+          issue: document.getElementById("issue")?.value || "",
+          urgency: document.getElementById("urgency")?.value || "",
+          status: "Pending",
+          createdAt: new Date().toISOString()
+        });
+        alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+        ticketForm.reset();
+      } catch (err) {
+        console.error("ስህተት፡ ", err);
+      }
+    });
+  }
+
+  // Real-time Tracker
+  onSnapshot(collection(db, "bela_tickets"), (snapshot) => {
+    const trackerBody = document.getElementById("trackerTableBody");
+    if (!trackerBody) return;
+    trackerBody.innerHTML = "";
+    snapshot.forEach((docSnap) => {
+      const d = docSnap.data();
+      trackerBody.innerHTML += `
+        <tr>
+          <td>${d.createdAt ? d.createdAt.split('T')[0] : '-'}</td>
+          <td>${d.requesterName || '-'}</td>
+          <td>${d.department || '-'}</td>
+          <td>${d.issue || '-'}</td>
+          <td><b>${d.status || 'Pending'}</b></td>
+        </tr>
+      `;
+    });
+  });
+
+  console.log("Firebase በትክክል ተገናኝቷል!");
 </script>
 
 </body>
