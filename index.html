@@ -1190,8 +1190,78 @@
                 });
             }
         }
-    </script>
-    1192:     }
+    }
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    onSnapshot, 
+    doc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmZ_j-83F1DcU1fS9MXG1uM5nOlMZPpCM",
+    authDomain: "bellahc.firebaseapp.com",
+    projectId: "bellahc",
+    storageBucket: "bellahc.firebasestorage.app",
+    messagingSenderId: "330353373650",
+    appId: "1:330353373650:web:d57a156d98a7eb3bef580b",
+    measurementId: "G-T3X0SPV5QT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.getDocs = getDocs;
+  window.onSnapshot = onSnapshot;
+  window.doc = doc;
+  window.updateDoc = updateDoc;
+
+  // 1. የ IT ጥያቄ (Ticket) መላኪያ
+  window.submitTicket = async function(ticketData) {
+    try {
+      const docRef = await addDoc(collection(db, "bela_tickets"), {
+        ...ticketData,
+        status: "Pending",
+        createdAt: new Date().toISOString()
+      });
+      alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+      return docRef.id;
+    } catch (error) {
+      console.error("መረጃው አልተላከም: ", error);
+      alert("ስህተት ተፈጥሯል፤ እባክዎ እንደገና ይሞክሩ።");
+    }
+  };
+
+  // 2. የዕለታዊ ፍተሻ ሪፖርት (Log) መላኪያ
+  window.submitLog = async function(logData) {
+    try {
+      const docRef = await addDoc(collection(db, "bela_logs"), {
+        ...logData,
+        createdAt: new Date().toISOString()
+      });
+      alert("የፍተሻ ሪፖርቱ በስኬት ተመዝግቧል!");
+      return docRef.id;
+    } catch (error) {
+      console.error("ሪፖርቱ አልተመዘገበም: ", error);
+    }
+  };
+
+  console.log("Firebase በትክክል ተገናኝቷል!");
+</script>
+
+</body>
+</html>
 1193: </script>
 
 <!-- የ Firebase ኮዱን እዚህ መካከል ላይ ይለጥፉ -->
