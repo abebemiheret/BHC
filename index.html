@@ -892,7 +892,7 @@
     const canvas = document.getElementById('sigReqCanvas');
     const sigData = canvas ? canvas.toDataURL() : '';
 
-    const newTicket = {
+   const newTicket = {
         timestamp: Date.now(),
         requesterName: document.getElementById('reqName')?.value?.trim() || '',
         department: document.getElementById('reqDept')?.value || '',
@@ -903,6 +903,7 @@
         sig: typeof sigData !== 'undefined' ? sigData : '',
         status: 'Pending'
     };
+    
 
     // መረጃውን ወደ Firebase ለመላክ
     await addDoc(collection(db, "bela_tickets"), newTicket);
