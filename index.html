@@ -892,7 +892,7 @@
     const canvas = document.getElementById('sigReqCanvas');
     const sigData = canvas ? canvas.toDataURL() : '';
 
-  async function submitTicket(e) {
+ async function submitTicket(e) {
     e.preventDefault();
 
     let reqTypeVal = document.getElementById('reqType').value;
@@ -913,8 +913,11 @@
         date: document.getElementById('reqDate')?.value || '',
         sig: typeof sigData !== 'undefined' ? sigData : '',
         status: 'Pending'
-    }
+    };
 
+    await addDoc(collection(db, "bela_tickets"), newTicket);
+    alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+}
     // አሁን 'await' ያለ ምንም ችግር መስራት ይችላል
     await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
