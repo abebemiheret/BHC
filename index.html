@@ -1177,7 +1177,7 @@
             lBody.innerHTML = '';
             if(filteredLogs.length === 0) {
                 lBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">በተመረጠው ጊዜ የተመዘገበ የፍተሻ ሪፖርት የለም</td></tr>';
-            } else {
+                   } else {
                 filteredLogs.forEach(l => {
                     lBody.innerHTML += `
                         <tr>
@@ -1187,103 +1187,6 @@
                             <td><img src="${l.sig}" class="sig-img" alt="ፊርማ"></td>
                         </tr>
                     `;
-                });
-            }
-        }
-    }
-  }
-</script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    onSnapshot 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCmZ_j-83F1DcU1fS9MXG1uM5nOlMZPpCM",
-    authDomain: "bellahc.firebaseapp.com",
-    projectId: "bellahc",
-    storageBucket: "bellahc.firebasestorage.app",
-    messagingSenderId: "330353373650",
-    appId: "1:330353373650:web:d57a156d98a7eb3bef580b",
-    measurementId: "G-T3X0SPV5QT"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 1. የ IT ጥያቄ (Ticket) መላኪያ
-  window.submitTicket = async function(ticketData) {
-    try {
-      const docRef = await addDoc(collection(db, "bela_tickets"), {
-        ...ticketData,
-        status: "Pending",
-        createdAt: new Date().toISOString()
-      });
-      alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-      return docRef.id;
-    } catch (error) {
-      console.error("መረጃው አልተላከም: ", error);
-      alert("ስህተት ተፈጥሯል፤ እባክዎ እንደገና ይሞክሩ።");
-    }
-  };
-
-  // 2. የዕለታዊ ፍተሻ ሪፖርት (Log) መላኪያ
-  window.submitLog = async function(logData) {
-    try {
-      const docRef = await addDoc(collection(db, "bela_logs"), {
-        ...logData,
-        createdAt: new Date().toISOString()
-      });
-      alert("የፍተሻ ሪፖርቱ በስኬት ተመዝግቧል!");
-      return docRef.id;
-    } catch (error) {
-      console.error("ሪፖርቱ አልተመዘገበም: ", error);
-    }
-  };
-
-  // 3. የ Form Submit Event Listener
-  const ticketForm = document.getElementById("ticketForm");
-  if (ticketForm) {
-    ticketForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      
-      const ticketData = {
-        requesterName: document.getElementById("requesterName")?.value || "",
-        department: document.getElementById("department")?.value || "",
-        issue: document.getElementById("issue")?.value || "",
-        urgency: document.getElementById("urgency")?.value || ""
-      };
-
-      await window.submitTicket(ticketData);
-      e.target.reset();
-    });
-  }
-
-  // 4. Real-time Tracker
-  onSnapshot(collection(db, "bela_tickets"), (snapshot) => {
-    const trackerBody = document.getElementById("trackerTableBody");
-    if (!trackerBody) return;
-    trackerBody.innerHTML = "";
-    snapshot.forEach((docSnap) => {
-      const d = docSnap.data();
-      trackerBody.innerHTML += `
-        <tr>
-          <td>${d.createdAt ? d.createdAt.split('T')[0] : '-'}</td>
-          <td>${d.requesterName || '-'}</td>
-          <td>${d.department || '-'}</td>
-          <td>${d.issue || '-'}</td>
-          <td><b>${d.status || 'Pending'}</b></td>
-        </tr>
-      `;
-    });
-  });
-
-  console.log("Firebase በትክክል ተገናኝቷል!");
 </script>
 
 </body>
