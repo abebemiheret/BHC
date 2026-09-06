@@ -881,29 +881,33 @@
             }
         }
 
-        async function submitTicket(e) {
-            e.preventDefault();
-            
-            let reqTypeVal = document.getElementById('reqType').value;
-            if(reqTypeVal === 'ሌላ') {
-                reqTypeVal = 'ሌላ፡ ' + document.getElementById('reqTypeOther').value;
-            }
+       async function submitTicket(e) {
+    e.preventDefault();
 
-            const canvas = document.getElementById('sigReqCanvas');
-            const sigData = canvas.toDataURL();
+    let reqTypeVal = document.getElementById('reqType').value;
+    if(reqTypeVal === 'ሌላ') {
+        reqTypeVal = 'ሌላ: ' + document.getElementById('reqTypeOther').value;
+    }
 
-            const newTicket = {
-                const newTicket = {
-   const newTicket = {
-      timestamp: Date.now(),
-      requesterName: document.getElementById('reqName')?.value?.trim() || '',
-      department: document.getElementById('reqDept')?.value || '',
-      room: document.getElementById('reqRoom')?.value || '',
-      type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
-      issue: document.getElementById('reqDesc')?.value || '',
-      date: document.getElementById('reqDate')?.value || '',
-      sig: typeof sigData !== 'undefined' ? sigData : '',
-      status: 'Pending'
+    const canvas = document.getElementById('sigReqCanvas');
+    const sigData = canvas ? canvas.toDataURL() : '';
+
+    const newTicket = {
+        timestamp: Date.now(),
+        requesterName: document.getElementById('reqName')?.value?.trim() || '',
+        department: document.getElementById('reqDept')?.value || '',
+        room: document.getElementById('reqRoom')?.value || '',
+        type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
+        issue: document.getElementById('reqDesc')?.value || '',
+        date: document.getElementById('reqDate')?.value || '',
+        sig: typeof sigData !== 'undefined' ? sigData : '',
+        status: 'Pending'
+    };
+
+    // መረጃውን ወደ Firebase ለመላክ
+    await addDoc(collection(db, "bela_tickets"), newTicket);
+    alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
+}
   };
 
   // መረጃውን ወደ Firebase የሚልከው ትእዛዝ
