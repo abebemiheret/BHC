@@ -893,17 +893,18 @@
             const sigData = canvas.toDataURL();
 
             const newTicket = {
-                timestamp: Date.now(),
-                name: document.getElementById('reqName').value.trim(),
-                dept: document.getElementById('reqDept').value,
-                room: document.getElementById('reqRoom').value,
-                type: reqTypeVal,
-                desc: document.getElementById('reqDesc').value,
-                date: document.getElementById('reqDate').value,
-                sig: sigData,
-                status: 'አልተሰራም',
-                response: 'በሂደት ላይ ነው...'
-            };
+                const newTicket = {
+    timestamp: Date.now(),
+    requesterName: document.getElementById('reqName').value.trim(),
+    department: document.getElementById('reqDept').value,
+    room: document.getElementById('reqRoom').value,
+    type: reqTypeVal,
+    issue: document.getElementById('reqDesc').value,
+    date: document.getElementById('reqDate').value,
+    sig: sigData,
+    status: 'Pending',
+    urgency: 'Medium'
+};
 
             // 1. Save locally
             tickets.push(newTicket);
