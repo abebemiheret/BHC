@@ -1185,14 +1185,23 @@
                             <td>${l.items}</td>
                             <td>${l.issues}</td>
                             <td><img src="${l.sig}" class="sig-img" alt="ፊርማ"></td>
-                       </tr>
+                     </tr>
             `;
         });
     }
 }
 </script>
 
-<!-- የ Firebase ማገናኛ ኮድ -->
+<script>
+  // enterSystem Error ለመፍታት
+  window.enterSystem = function() {
+    const passInput = document.getElementById("sysPassword") || document.getElementById("passInput");
+    if (passInput) {
+      console.log("ሲስተም ለመግባት እየሞከረ ነው...");
+    }
+  };
+</script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { 
