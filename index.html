@@ -1191,5 +1191,47 @@
             }
         }
     </script>
+    1192:     }
+1193: </script>
+
+<!-- የ Firebase ኮዱን እዚህ መካከል ላይ ይለጥፉ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    onSnapshot, 
+    doc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmZ_j-83F1DcU1fS9MXG1uM5nOlMZPpCM",
+    authDomain: "bellahc.firebaseapp.com",
+    projectId: "bellahc",
+    storageBucket: "bellahc.firebasestorage.app",
+    messagingSenderId: "330353373650",
+    appId: "1:330353373650:web:d57a156d98a7eb3bef580b",
+    measurementId: "G-T3X0SPV5QT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.getDocs = getDocs;
+  window.onSnapshot = onSnapshot;
+  window.doc = doc;
+  window.updateDoc = updateDoc;
+
+  console.log("Firebase በትክክል ተገናኝቷል!");
+</script>
+
+1194: </body>
+1195: </html>
 </body>
 </html>
