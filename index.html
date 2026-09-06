@@ -913,13 +913,13 @@
         date: document.getElementById('reqDate')?.value || '',
         sig: typeof sigData !== 'undefined' ? sigData : '',
         status: 'Pending'
-    };
+    }
 
     // አሁን 'await' ያለ ምንም ችግር መስራት ይችላል
     await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
 }
-    };
+    }
     
 
     // መረጃውን ወደ Firebase ለመላክ
