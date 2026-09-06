@@ -889,10 +889,7 @@
         reqTypeVal = 'ሌላ: ' + document.getElementById('reqTypeOther').value;
     }
 
-    const canvas = document.getElementById('sigReqCanvas');
-    const sigData = canvas ? canvas.toDataURL() : '';
-
-async function submitTicket(e) {
+   async function submitTicket(e) {
     e.preventDefault();
 
     let reqTypeVal = document.getElementById('reqType').value;
@@ -917,7 +914,7 @@ async function submitTicket(e) {
 
     await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-    document.getElementById('ticketForm').reset();
+    document.getElementById('ticketForm'.reset()); // ወይም ቀድሞ የነበረውን .reset() ይጠቀሙ
 }
     // አሁን 'await' ያለ ምንም ችግር መስራት ይችላል
     await addDoc(collection(db, "bela_tickets"), newTicket);
