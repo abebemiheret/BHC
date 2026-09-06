@@ -920,19 +920,10 @@
     await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
 
-    
-    
-
-    // መረጃውን ወደ Firebase ለመላክ
-    await addDoc(collection(db, "bela_tickets"), newTicket);
+ await addDoc(collection(db, "bela_tickets"), newTicket);
     alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-
-  
-
-  // መረጃውን ወደ Firebase የሚልከው ትእዛዝ
-  await addDoc(collection(db, "bela_tickets"), newTicket);
-  alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-
+    document.getElementById('ticketForm').reset();
+}
 
 
             // 1. Save locally
