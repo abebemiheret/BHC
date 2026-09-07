@@ -930,7 +930,7 @@
             tickets.push(newTicket);
             localStorage.setItem('bela_tickets', JSON.stringify(tickets));
 
-           // 2. Firebase Database Sync
+          // 2. Firebase Database Sync
 if (db) {
     db.collection("tickets").add(newTicket)
         .then(() => {
