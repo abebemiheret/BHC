@@ -930,13 +930,16 @@
             tickets.push(newTicket);
             localStorage.setItem('bela_tickets', JSON.stringify(tickets));
 
-            // 2. Firebase Database Sync
-            if (db) {
-                try {
-                    await db.collection("tickets").add(newTicket);
-                } catch(err) {
-                    console.error("Firebase store error:", err);
-                }
+           // 2. Firebase Database Sync
+if (db) {
+    db.collection("tickets").add(newTicket)
+        .then(() => {
+            console.log("Firebase ውስጥ በትክክል ተመዝግቧል!");
+        })
+        .catch((err) => {
+            console.error("Firebase store error:", err);
+        });
+}
             }
 
             // 3. Send Email Notification via Formspree
