@@ -767,17 +767,19 @@
             }, 4000);
         }
 
-        function enterSystem() {
-            const nav = document.getElementById('mainNav');
-            nav.classList.add('nav-visible');
-            showSection('sec1');
-            
-            // Analytics Event Tracking
-            if (typeof gtag === 'function') {
-                gtag('event', 'enter_system', { 'event_category': 'Navigation' });
-            }
-        }
+       function enterSystem() {
+    const nav = document.getElementById('mainNav');
+    if (nav) {
+        nav.classList.add('nav-visible');
+    }
+    
+    showSection('sec1');
 
+    // Analytics Event Tracking
+    if (typeof gtag === 'function') {
+        gtag('event', 'enter_system', { 'event_category': 'Navigation' });
+    }
+}
         function exitSystem() {
             const nav = document.getElementById('mainNav');
             nav.classList.remove('nav-visible');
