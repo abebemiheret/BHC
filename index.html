@@ -997,21 +997,21 @@ if (db) {
                 return;
             }
 
-            filteredList.forEach((t, index) => {
-                const badgeClass = t.status === 'ተሰርቷል' ? 'badge-done' : 'badge-pending';
-                tbody.innerHTML += '
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${t.name}</td>
-                        <td>${t.dept} (ክፍል ${t.room})</td>
-                        <td>${t.type}</td>
-                        <td>${t.date}</td>
-                        <td><span class="badge ${badgeClass}">${t.status}</span></td>
-                        <td><img src="${t.sig}" class="sig-img" alt="ፊርማ"></td>
-                        <td>${t.response}</td>
-                    </tr>
-                `;
-            });
+           filteredList.forEach((t, index) => {
+    const badgeClass = t.status === 'ተሰርቷል' ? 'badge-done' : 'badge-pending';
+    tbody.innerHTML += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${t.name}</td>
+            <td>${t.dept} (ክፍል ${t.room})</td>
+            <td>${t.type}</td>
+            <td>${t.date}</td>
+            <td><span class="badge ${badgeClass}">${t.status}</span></td>
+            <td><img src="${t.sig}" class="sig-img" alt="ፊርማ"></td>
+            <td>${t.response}</td>
+        </tr>
+    `;
+});
         }
 
         function adminLogin(e) {
