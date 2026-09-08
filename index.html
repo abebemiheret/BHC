@@ -729,7 +729,6 @@
             appId: "YOUR_APP_ID"
         };
 
-        // Initialize Firebase
         let db = null;
         try {
             if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
@@ -752,6 +751,12 @@
         document.getElementById('chkDate').valueAsDate = new Date();
         document.getElementById('reportFilterDate').valueAsDate = new Date();
 
+        window.onload = function() {
+            updateNotificationBadge();
+            initCanvas('sigReqCanvas');
+            initCanvas('sigChkCanvas');
+        };
+
         function updateNotificationBadge() {
             const badge = document.getElementById('ticketBadge');
             if(badge) {
@@ -767,23 +772,54 @@
             }, 4000);
         }
 
-       function enterSystem() {
-    const nav = document.getElementById('mainNav');
-    if (nav) {
-        nav.classList.add('nav-visible');
-    }
-    
-    showSection('sec1');
+        function enterSystem() {
+            const nav = document.getElementById('mainNav');
+            if (nav) {
+                nav.classList.add('nav-visible');
+            }
+            showSection('sec1');
 
-    // Analytics Event Tracking
-    if (typeof gtag === 'function') {
-        gtag('event', 'enter_system', { 'event_category': 'Navigation' });
-    }
-}
+            if (typeof gtag === 'function') {
+                gtag('event', 'enter_system', { 'event_category': 'Navigation' });
+            }
+        }
+
         function exitSystem() {
             const nav = document.getElementById('mainNav');
-            nav.classList.remove('nav-visible');
+            if (nav) {
+                nav.classList.remove('nav-visible');
+            }
             showSection('welcome');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) targetSection.classList.add('active');
+
+            const btnMap = { 'sec1': 'btn-sec1', 'sec2': 'btn-sec2', 'sec3': 'btn-sec3', 'welcome': 'btn-welcome' };
+            if (btnMap[sectionId]) {
+                const activeBtn = document.getElementById(btnMap[sectionId]);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+
+            if (sectionId === 'sec3') {
+                renderAdminTable();
+            }
+        }
+
+        function toggleOtherTypeInput() {
+            const select = document.getElementById('reqType');
+            const otherInput = document.getElementById('reqTypeOther');
+            if (select.value === 'ሌላ') {
+                otherInput.style.display = 'block';
+                otherInput.required = true;
+            } else {
+                otherInput.style.display = 'none';
+                otherInput.required = false;
+            }
         }
 
         function initCanvas(canvasId) {
@@ -796,507 +832,302 @@
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
             }
 
-            function startDraw(e) { isDrawing = true; draw(e); }
-            function endDraw() { isDrawing = false; ctx.beginPath(); }
+            function startDrawing(e) {
+                isDrawing = true;
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+
             function draw(e) {
                 if(!isDrawing) return;
                 e.preventDefault();
                 const pos = getPos(e);
                 ctx.lineWidth = 2;
                 ctx.lineCap = 'round';
-                ctx.strokeStyle = '#0284c7';
+                ctx.strokeStyle = '#000000';
                 ctx.lineTo(pos.x, pos.y);
                 ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
             }
 
-            canvas.addEventListener('mousedown', startDraw);
-            canvas.addEventListener('mouseup', endDraw);
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            canvas.addEventListener('mousedown', startDrawing);
             canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('touchstart', startDraw);
-            canvas.addEventListener('touchend', endDraw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawing);
             canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
         }
 
         function clearCanvas(canvasId) {
             const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        window.onload = function() {
-            initCanvas('sigReqCanvas');
-            initCanvas('sigChkCanvas');
-            
-            // Fetch tickets from Firebase if available
-            if(db) {
-                db.collection("tickets").onSnapshot((snapshot) => {
-                    tickets = [];
-                    snapshot.forEach((doc) => {
-                        tickets.push({ id: doc.id, ...doc.data() });
-                    });
-                    updateNotificationBadge();
-                });
-
-                db.collection("logs").onSnapshot((snapshot) => {
-                    logs = [];
-                    snapshot.forEach((doc) => {
-                        logs.push({ id: doc.id, ...doc.data() });
-                    });
-                });
-            } else {
-                updateNotificationBadge();
-            }
-        };
-
-        function showSection(secId) {
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(secId).classList.add('active');
-            const activeNavBtn = document.getElementById('btn-' + secId);
-            if(activeNavBtn) activeNavBtn.classList.add('active');
-
-            if(secId === 'sec2') {
-                document.getElementById('searchMyName').value = '';
-                document.getElementById('trackerTable').innerHTML = '<tr><td colspan="8" style="text-align:center;">እባክዎ ጥያቄዎን ለመመልከት ከላይ ባለው ሳጥን ላይ ስምዎን በመጻፍ «የኔን ጥያቄ ፈልግ» የሚለውን ይጫኑ።</td></tr>';
-            }
-            if(secId === 'sec3' && document.getElementById('adminDashboard').style.display === 'block') {
-                renderAdminTable();
-                generateReport();
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
 
-        function toggleOtherTypeInput() {
-            const val = document.getElementById('reqType').value;
-            const otherInput = document.getElementById('reqTypeOther');
-            if(val === 'ሌላ') {
-                otherInput.style.display = 'block';
-                otherInput.required = true;
-            } else {
-                otherInput.style.display = 'none';
-                otherInput.required = false;
+        function submitTicket(e) {
+            e.preventDefault();
+            const canvas = document.getElementById('sigReqCanvas');
+            const sigData = canvas.toDataURL();
+
+            let issueType = document.getElementById('reqType').value;
+            if (issueType === 'ሌላ') {
+                issueType = document.getElementById('reqTypeOther').value;
             }
-        }
 
-       async function submitTicket(e) {
-    e.preventDefault();
+            const newTicket = {
+                id: Date.now(),
+                name: document.getElementById('reqName').value,
+                dept: document.getElementById('reqDept').value,
+                room: document.getElementById('reqRoom').value,
+                type: issueType,
+                desc: document.getElementById('reqDesc').value,
+                date: document.getElementById('reqDate').value,
+                sig: sigData,
+                status: 'በሂደት ላይ',
+                response: ''
+            };
 
-    let reqTypeVal = document.getElementById('reqType').value;
-    if(reqTypeVal === 'ሌላ') {
-        reqTypeVal = 'ሌላ: ' + document.getElementById('reqTypeOther').value;
-    }
-
-   async function submitTicket(e) {
-    e.preventDefault();
-
-    let reqTypeVal = document.getElementById('reqType').value;
-    if(reqTypeVal === 'ሌላ') {
-        reqTypeVal = 'ሌላ: ' + document.getElementById('reqTypeOther').value;
-    }
-
-    const canvas = document.getElementById('sigReqCanvas');
-const newTicket = {
-    timestamp: Date.now(),
-    requesterName: document.getElementById('reqName')?.value?.trim() || '',
-    department: document.getElementById('reqDept')?.value || '',
-    room: document.getElementById('reqRoom')?.value || '',
-    type: typeof reqTypeVal !== 'undefined' ? reqTypeVal : '',
-    issue: document.getElementById('reqDesc')?.value || '',
-    date: document.getElementById('reqDate')?.value || '',
-    sig: typeof sigData !== 'undefined' ? sigData : '',
-    status: 'Pending'
-};
-
-// 1. Save locally
-tickets.push(newTicket);
-localStorage.setItem('bela_tickets', JSON.stringify(tickets));
-
-// 2. Firebase Database Sync
-if (db) {
-    // Firebase Modular (v9+) የሚጠቀሙ ከሆነ:
-    await addDoc(collection(db, "bela_tickets"), newTicket);
-    
-    /* ወይም Firebase Namespaced (v8) ከሆነ ይሄን ይጠቀሙ:
-    db.collection("tickets").add(newTicket)
-        .then(() => console.log("Firebase ውስጥ በትክክል ተመዝግቧል!"))
-        .catch((err) => console.error("Firebase store error:", err));
-    */
-}
-
-alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-document.getElementById('ticketForm').reset();
-
-
-            // 1. Save locally
-            tickets.push(newTicket);
+            tickets.unshift(newTicket);
             localStorage.setItem('bela_tickets', JSON.stringify(tickets));
 
-          // 2. Firebase Database Sync
-if (db) {
-    db.collection("tickets").add(newTicket)
-        .then(() => {
-            console.log("Firebase ውስጥ በትክክል ተመዝግቧል!");
-        })
-        .catch((err) => {
-            console.error("Firebase store error:", err);
-        });
-}
-            
-
-            // 3. Send Email Notification via Formspree
-            if (FORMSPREE_ENDPOINT && !FORMSPREE_ENDPOINT.includes("YOUR_FORMSPREE_ID")) {
+            // Optional Formspree dispatch
+            if (FORMSPREE_ENDPOINT !== "https://formspree.io/f/YOUR_FORMSPREE_ID") {
                 fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        Name: newTicket.name,
-                        Department: newTicket.dept,
-                        Room: newTicket.room,
-                        IssueType: newTicket.type,
-                        Description: newTicket.desc,
-                        Date: newTicket.date
-                    })
-                }).catch(err => console.log('Formspree dispatch error:', err));
+                    body: JSON.stringify(newTicket)
+                }).catch(err => console.log('Formspree submit error:', err));
             }
 
-            // 4. Analytics Event
-            if (typeof gtag === 'function') {
-                gtag('event', 'submit_ticket', {
-                    'issue_type': newTicket.type,
-                    'department': newTicket.dept
-                });
+            // Optional Firebase dispatch
+            if (db) {
+                db.collection("tickets").add(newTicket).catch(err => console.log("Firebase add error:", err));
             }
-            
-            document.getElementById('ticketForm').reset();
-            clearCanvas('sigReqCanvas');
-            document.getElementById('reqDate').valueAsDate = new Date();
-            toggleOtherTypeInput();
-            
+
             updateNotificationBadge();
             showToastNotification();
+            document.getElementById('ticketForm').reset();
+            clearCanvas('sigReqCanvas');
             showSection('thankyou');
-        
+        }
 
         function renderTrackerTable() {
+            const query = document.getElementById('searchMyName').value.trim().toLowerCase();
             const tbody = document.getElementById('trackerTable');
             tbody.innerHTML = '';
 
-            const searchNameInput = document.getElementById('searchMyName');
-            const searchName = searchNameInput ? searchNameInput.value.trim().toLowerCase() : '';
-
-            if(!searchName) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: #dc2626; font-weight: bold;">እባክዎ ጥያቄዎን ለማየት ስምዎን በትክክል ያስገቡ!</td></tr>';
+            if(!query) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">እባክዎ ለመፈለግ ስምዎን ያስገቡ።</td></tr>';
                 return;
             }
 
-            let filteredList = tickets.filter(t => t.name.toLowerCase() === searchName);
-            
-            if(filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">በ "${searchName}" ስም የተመዘገበ ጥያቄ አልተገኘም! እባክዎ በትክክለኛው ስም ይፈልጉ።</td></tr>`;
+            const matched = tickets.filter(t => t.name.toLowerCase().includes(query));
+
+            if(matched.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">በዚህ ስም የተመዘገበ ጥያቄ አልተገኘም።</td></tr>';
                 return;
             }
 
-           filteredList.forEach((t, index) => {
-    const badgeClass = t.status === 'ተሰርቷል' ? 'badge-done' : 'badge-pending';
-    tbody.innerHTML += `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${t.name}</td>
-            <td>${t.dept} (ክፍል ${t.room})</td>
-            <td>${t.type}</td>
-            <td>${t.date}</td>
-            <td><span class="badge ${badgeClass}">${t.status}</span></td>
-            <td><img src="${t.sig}" class="sig-img" alt="ፊርማ"></td>
-            <td>${t.response}</td>
-        </tr>
-    `;
-});
+            matched.forEach((t, index) => {
+                const tr = document.createElement('tr');
+                const badgeClass = t.status === 'ተጠናቋል' ? 'badge-done' : 'badge-pending';
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${t.name}</td>
+                    <td>${t.dept} (ክፍል ${t.room})</td>
+                    <td>${t.type}</td>
+                    <td>${t.date}</td>
+                    <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                    <td><img src="${t.sig}" class="sig-img" alt="ፊርማ"></td>
+                    <td>${t.response || 'ምላሽ አልተሰጠም'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function adminLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('loginUser').value;
-            const p = document.getElementById('loginPass').value;
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
 
-            if(u === 'IT' && p === '12345') {
+            // Simple demo check (ይህንን የይለፍ ቃል እንደፍላጎትዎ ይቀይሩት)
+            if(user === 'admin' && pass === '1234') {
                 document.getElementById('loginArea').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
                 renderAdminTable();
-                generateReport();
             } else {
-                alert('የተሳሳተ የመግቢያ ስም ወይም ፓስወርድ!');
+                alert('የተሳሳተ የመግቢያ ስም ወይም የይለፍ ቃል!');
             }
         }
 
         function adminLogout() {
             document.getElementById('loginArea').style.display = 'block';
             document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
         }
 
         function renderAdminTable() {
             const tbody = document.getElementById('adminTicketTable');
             tbody.innerHTML = '';
 
-            tickets.forEach((t) => {
-                const docId = t.id || t.timestamp;
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${t.name}</b><br>${t.dept} (ክፍል ${t.room})</td>
-                        <td><b>${t.type}:</b> ${t.desc}</td>
-                        <td>
-                            <select id="status-${docId}">
-                                <option value="አልተሰራም" ${t.status === 'አልተሰራም' ? 'selected' : ''}>አልተሰራም</option>
-                                <option value="ተሰርቷል" ${t.status === 'ተሰርቷል' ? 'selected' : ''}>ተሰርቷል</option>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="text" id="resp-${docId}" value="${t.response !== 'በሂደት ላይ ነው...' ? t.response : ''}" placeholder="ምን እንደተስተካከለ ይጻፉ">
-                        </td>
-                        <td>
-                            <button onclick="updateTicket('${docId}')" style="padding: 5px 10px; background: #0f766e; color: white; border: none; border-radius: 4px; cursor: pointer;">ጥያቄውን መልስ</button>
-                        </td>
-                    </tr>
+            if(tickets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ምንም የቀረበ ጥያቄ የለም።</td></tr>';
+                return;
+            }
+
+            tickets.forEach((t, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${t.name}</strong><br>${t.dept} - ${t.room}</td>
+                    <td><strong>${t.type}</strong><br>${t.desc}</td>
+                    <td>
+                        <select onchange="updateTicketStatus(${t.id}, this.value)">
+                            <option value="በሂደት ላይ" ${t.status === 'በሂደት ላይ' ? 'selected' : ''}>በሂደት ላይ</option>
+                            <option value="ተጠናቋል" ${t.status === 'ተጠናቋል' ? 'selected' : ''}>ተጠናቋል</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" value="${t.response || ''}" id="resp-${t.id}" placeholder="ምላሽ ይጻፉ...">
+                    </td>
+                    <td>
+                        <button onclick="saveAdminResponse(${t.id})" class="btn" style="padding: 6px 12px; font-size: 0.8rem;">አስቀምጥ</button>
+                    </td>
                 `;
+                tbody.appendChild(tr);
             });
         }
 
-        async function updateTicket(id) {
-            const newStatus = document.getElementById(`status-${id}`).value;
-            const newResp = document.getElementById(`resp-${id}`).value || 'ምላሽ አልተሰጠም';
-
-            const ticket = tickets.find(t => (t.id === id || t.timestamp == id));
+        function updateTicketStatus(id, newStatus) {
+            const ticket = tickets.find(t => t.id === id);
             if(ticket) {
                 ticket.status = newStatus;
-                ticket.response = newResp;
                 localStorage.setItem('bela_tickets', JSON.stringify(tickets));
-
-                if(db && typeof id === 'string' && id.length > 10) {
-                    await db.collection("tickets").doc(id).update({
-                        status: newStatus,
-                        response: newResp
-                    });
-                }
-                
-                alert('ጥያቄው ተመልሷል!');
-                renderAdminTable();
-                generateReport();
             }
         }
 
-        async function saveChecklist(e) {
-            e.preventDefault();
-            const checkedItems = [];
-            if(document.getElementById('chkServer').checked) checkedItems.push('ሰርቨር');
-            if(document.getElementById('chkSwitches15').checked) checkedItems.push('1ኛ-5ኛ ፎቅ ስዊች');
-            if(document.getElementById('chkGroundCore').checked) checkedItems.push('ግራውንድ ኮር ስዊች');
-            if(document.getElementById('chkExtraSwitch').checked) checkedItems.push('ተጨማሪ ስዊች');
-            if(document.getElementById('chkCardPharmSwitch').checked) checkedItems.push('ካርድ/ፋርማሲ ስዊች');
+        function saveAdminResponse(id) {
+            const respValue = document.getElementById(`resp-${id}`).value;
+            const ticket = tickets.find(t => t.id === id);
+            if(ticket) {
+                ticket.response = respValue;
+                localStorage.setItem('bela_tickets', JSON.stringify(tickets));
+                alert('ምላሹ በተሳካ ሁኔታ ተቀምጧል!');
+            }
+        }
 
-            const issuesText = document.getElementById('chkIssues').value.trim();
+        function saveChecklist(e) {
+            e.preventDefault();
             const canvas = document.getElementById('sigChkCanvas');
             const sigData = canvas.toDataURL();
 
-            const logEntry = {
-                timestamp: Date.now(),
+            const itemsChecked = [];
+            if(document.getElementById('chkServer').checked) itemsChecked.push('ሰርቨር');
+            if(document.getElementById('chkSwitches15').checked) itemsChecked.push('1ኛ-5ኛ ፎቅ ስዊቾች');
+            if(document.getElementById('chkGroundCore').checked) itemsChecked.push('ግራውንድ ኮር ስዊች');
+            if(document.getElementById('chkExtraSwitch').checked) itemsChecked.push('ተጨማሪ ስዊች');
+            if(document.getElementById('chkCardPharmSwitch').checked) itemsChecked.push('ካርድና ፋርማሲ ስዊች');
+
+            const newLog = {
+                id: Date.now(),
                 date: document.getElementById('chkDate').value,
-                items: checkedItems.length > 0 ? checkedItems.join(', ') : 'ምንም አልተመረጠም',
-                issues: issuesText ? issuesText : 'ምንም ችግር የለም',
+                items: itemsChecked.join(', '),
+                issues: document.getElementById('chkIssues').value,
                 sig: sigData
             };
 
-            logs.push(logEntry);
+            logs.unshift(newLog);
             localStorage.setItem('bela_logs', JSON.stringify(logs));
 
-            if (db) {
-                try {
-                    await db.collection("logs").add(logEntry);
-                } catch(err) {
-                    console.error("Firebase log store error:", err);
-                }
-            }
-
-            alert('የፍተሻ ሪፖርቱ እና ያጋጠሙ ችግሮች ተመዝግበዋል!');
+            alert('የዕለቱ ፍተሻ በተሳካ ሁኔታ ተመዝግቧል!');
             document.getElementById('checklistForm').reset();
             clearCanvas('sigChkCanvas');
-            document.getElementById('chkDate').valueAsDate = new Date();
-            generateReport();
         }
 
         function generateReport() {
             const filterType = document.getElementById('reportFilterType').value;
-            const filterDateStr = document.getElementById('reportFilterDate').value;
-            if(!filterDateStr) return;
+            const startDate = new Date(document.getElementById('reportFilterDate').value);
 
-            const filterDate = new Date(filterDateStr);
-            let titleText = "";
+            let titleText = "የዕለታዊ ሪፖርት";
+            if(filterType === 'weekly') titleText = "የሳምንታዊ ሪፖርት";
+            if(filterType === 'monthly') titleText = "የወርሃዊ ሪፖርት";
+            if(filterType === 'quarterly') titleText = "የ3 ወር ሪፖርት";
 
-            if(filterType === 'daily') {
-                titleText = `የቀን ${filterDateStr} ዕለታዊ የአይቲ ሥራዎች እና የፍተሻ ሪፖርት`;
-            } else if(filterType === 'weekly') {
-                titleText = `የሳምንታዊ የአይቲ ሥራዎች እና የፍተሻ ሪፖርት (ከ ${filterDateStr} ጀምሮ)`;
-            } else if(filterType === 'monthly') {
-                titleText = `የወርሃዊ የአይቲ ሥራዎች እና የፍተሻ ሪፖርት (${filterDateStr.substring(0, 7)})`;
-            } else if(filterType === 'quarterly') {
-                titleText = `የ3 ወር (Quarterly) የአይቲ ሥራዎች እና የፍተሻ ሪፖርት (ከ ${filterDateStr} ጀምሮ ለ3 ወራት)`;
-            }
+            document.getElementById('reportTitle').innerText = `${titleText} (${startDate.toISOString().split('T')[0]})`;
 
-            document.getElementById('reportTitle').innerText = titleText;
-
+            // Filter tickets
             const filteredTickets = tickets.filter(t => {
                 const tDate = new Date(t.date);
-                if(filterType === 'daily') {
-                    return t.date === filterDateStr;
-                } else if(filterType === 'weekly') {
-                    const diffDays = (tDate - filterDate) / (1000 * 3600 * 24);
-                    return diffDays >= 0 && diffDays <= 7;
-                } else if(filterType === 'monthly') {
-                    return t.date.substring(0, 7) === filterDateStr.substring(0, 7);
-                } else if(filterType === 'quarterly') {
-                    const endDate = new Date(filterDate);
-                    endDate.setMonth(endDate.getMonth() + 3);
-                    return tDate >= filterDate && tDate <= endDate;
-                }
+                if(filterType === 'daily') return t.date === startDate.toISOString().split('T')[0];
+                const diffTime = Math.abs(startDate - tDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if(filterType === 'weekly') return diffDays <= 7;
+                if(filterType === 'monthly') return diffDays <= 30;
+                if(filterType === 'quarterly') return diffDays <= 90;
+                return true;
             });
 
+            // Filter logs
             const filteredLogs = logs.filter(l => {
                 const lDate = new Date(l.date);
-                if(filterType === 'daily') {
-                    return l.date === filterDateStr;
-                } else if(filterType === 'weekly') {
-                    const diffDays = (lDate - filterDate) / (1000 * 3600 * 24);
-                    return diffDays >= 0 && diffDays <= 7;
-                } else if(filterType === 'monthly') {
-                    return l.date.substring(0, 7) === filterDateStr.substring(0, 7);
-                } else if(filterType === 'quarterly') {
-                    const endDate = new Date(filterDate);
-                    endDate.setMonth(endDate.getMonth() + 3);
-                    return lDate >= filterDate && lDate <= endDate;
-                }
+                if(filterType === 'daily') return l.date === startDate.toISOString().split('T')[0];
+                const diffTime = Math.abs(startDate - lDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if(filterType === 'weekly') return diffDays <= 7;
+                if(filterType === 'monthly') return diffDays <= 30;
+                if(filterType === 'quarterly') return diffDays <= 90;
+                return true;
             });
 
+            // Update Summary
             document.getElementById('sumTotalTickets').innerText = filteredTickets.length;
-            document.getElementById('sumSolvedTickets').innerText = filteredTickets.filter(t => t.status === 'ተሰርቷል').length;
-            document.getElementById('sumPendingTickets').innerText = filteredTickets.filter(t => t.status === 'አልተሰራም').length;
+            document.getElementById('sumSolvedTickets').innerText = filteredTickets.filter(t => t.status === 'ተጠናቋል').length;
+            document.getElementById('sumPendingTickets').innerText = filteredTickets.filter(t => t.status === 'በሂደት ላይ').length;
             document.getElementById('sumTotalLogs').innerText = filteredLogs.length;
 
+            // Render Report Tables
             const tBody = document.getElementById('reportTicketsTable');
             tBody.innerHTML = '';
-            if(filteredTickets.length === 0) {
-                tBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">በተመረጠው ጊዜ የተመዘገበ ጥያቄ/ጥገና የለም</td></tr>';
-            } else {
-                filteredTickets.forEach(t => {
-                    tBody.innerHTML += `
-                        <tr>
-                            <td>${t.date}</td>
-                            <td>${t.name}</td>
-                            <td>${t.dept} (${t.room})</td>
-                            <td>${t.type}</td>
-                            <td><b>${t.status}</b></td>
-                            <td>${t.response}</td>
-                        </tr>
-                    `;
-                });
-            }
+            filteredTickets.forEach(t => {
+                tBody.innerHTML += `
+                    <tr>
+                        <td>${t.date}</td>
+                        <td>${t.name}</td>
+                        <td>${t.dept} (${t.room})</td>
+                        <td><strong>${t.type}</strong>: ${t.desc}</td>
+                        <td>${t.status}</td>
+                        <td>${t.response || '-'}</td>
+                    </tr>
+                `;
+            });
 
             const lBody = document.getElementById('reportLogsTable');
             lBody.innerHTML = '';
-            if(filteredLogs.length === 0) {
-                lBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">በተመረጠው ጊዜ የተመዘገበ የፍተሻ ሪፖርት የለም</td></tr>';
-                   } else {
-                filteredLogs.forEach(l => {
-                    lBody.innerHTML += `
-                        <tr>
-                           <td>${l.date}</td>
-<td>${l.items}</td>
-<td>${l.issues}</td>
-<td><img src="${l.sig}" class="sig-img" alt="ፊርማ"></td>
-                     </tr>
-            `;
-        });
-    }
-}
-
-
-<script>
-  // enterSystem Error ለመፍታት
-  window.enterSystem = function() {
-    const passInput = document.getElementById("sysPassword") || document.getElementById("passInput");
-    if (passInput) {
-      console.log("ሲስተም ለመግባት እየሞከረ ነው...");
-    }
-  };
-</script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    onSnapshot 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCmZ_j-83F1DcU1fS9MXG1uM5nOlMZPpCM",
-    authDomain: "bellahc.firebaseapp.com",
-    projectId: "bellahc",
-    storageBucket: "bellahc.firebasestorage.app",
-    messagingSenderId: "330353373650",
-    appId: "1:330353373650:web:d57a156d98a7eb3bef580b",
-    measurementId: "G-T3X0SPV5QT"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Ticket Form Submit
-  const ticketForm = document.getElementById("ticketForm");
-  if (ticketForm) {
-    ticketForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      try {
-        await addDoc(collection(db, "bela_tickets"), {
-          requesterName: document.getElementById("requesterName")?.value || "",
-          department: document.getElementById("department")?.value || "",
-          issue: document.getElementById("issue")?.value || "",
-          urgency: document.getElementById("urgency")?.value || "",
-          status: "Pending",
-          createdAt: new Date().toISOString()
-        });
-        alert("የ IT ጥያቄው በጥሩ ሁኔታ ተመዝግቧል!");
-        ticketForm.reset();
-      } catch (err) {
-        console.error("ስህተት፡ ", err);
-      }
-    });
-  }
-
-  // Real-time Tracker
-  onSnapshot(collection(db, "bela_tickets"), (snapshot) => {
-    const trackerBody = document.getElementById("trackerTableBody");
-    if (!trackerBody) return;
-    trackerBody.innerHTML = "";
-    snapshot.forEach((docSnap) => {
-      const d = docSnap.data();
-      trackerBody.innerHTML += `
-        <tr>
-          <td>${d.createdAt ? d.createdAt.split('T')[0] : '-'}</td>
-          <td>${d.requesterName || '-'}</td>
-          <td>${d.department || '-'}</td>
-          <td>${d.issue || '-'}</td>
-          <td><b>${d.status || 'Pending'}</b></td>
-        </tr>
-      `;
-    });
-  });
-
-  console.log("Firebase በትክክል ተገናኝቷል!");
-</script>
-
+            filteredLogs.forEach(l => {
+                lBody.innerHTML += `
+                    <tr>
+                        <td>${l.date}</td>
+                        <td>${l.items || 'ምንም አልተመረጠም'}</td>
+                        <td>${l.issues || 'ምንም የለም'}</td>
+                        <td><img src="${l.sig}" class="sig-img" alt="ፊርማ"></td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
 </body>
 </html>
